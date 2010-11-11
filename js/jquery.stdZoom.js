@@ -28,7 +28,7 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 	TRUE = true,
 	FALSE = false,
 	stdZoomPublic,
-	isIE = !$.support.opacity,
+	isIE = '\v'=='v',
 	isIE6 = isIE && !window.XMLHttpRequest,
 
 	// Event Strings (to increase compression)
@@ -37,12 +37,14 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 	
 	// Cached jQuery Object Variables
 	$window,
+	$document,
 	
 	// Variables for cached values or use across multiple functions
 	stdZoomContexts,
 	
 	defaults = {};
 
+					
 
 	// ****************
 	// HELPER FUNCTIONS
@@ -50,6 +52,7 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 	// find Context Object from $Object
 	function fuindContext ($obj) {
 		var context = null;
+
 		for(var i=0; i<stdZoomContexts.length; i++){
 			if($obj.get(0) == stdZoomContexts[i].$myBox.get(0)){
 				context = stdZoomContexts[i];
@@ -67,6 +70,7 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 	// Usage from within an iframe: parent.$.fn.stdZoom.hogehoge();
 	// ****************
 	stdZoomPublic = $.fn.stdZoom = function (options, custom_callback) {
+		
 		if (this.length) {
 			this.each(function () {
 				var data = $(this).data(stdZoom) ? $.extend({}, $(this).data(stdZoom), options) : $.extend({}, defaults, options);
@@ -83,27 +87,37 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 		
 		var context = {
 			id:stdZoomContexts.length,
-			maxZoomStep: 20,
 			zoomStep: 0,
 			oldZoomStep: 0,
+			maxZoomStep: 20,
+
 			blockSize: 256,
 			viewrect: { x: 0, y: 0, width: 256, height: 256 },
 			def_viewrect: { x: 0, y: 0, width: 256, height: 256 },
+
 			spliteNodes: new Array(20),
-			loadIntervalID: 0,
+			mouseX: 0,
+			mouseY: 0,
 			enterFrameID: 0,
-			mouseX: 0, mouseY: 0,
+			loadIntervalID: 0,
 			zoomLevelList: [],
 			dir: options.filePath,
-			thumb: options.filePath+'g_1_0_0.jpg',
 			data: options.zlv,
+			thumb: options.filePath+'g_1_0_0.jpg',
+			transparent: options.transparent,
+			
+			// setting patam
+			embedZoomOut: ( options.embedZoomOut==false )? false:true,
+			
+			
+			// $Object
 			$myBox: $(this),
-			$thumbnail: null,
-			$photoBox: null,
 			$wrap: null,
 			$dummy: null,	
+			$photoBox: null,
+			$thumbnail: null,
 		}
-		
+				
 		stdZoomContexts.push(context);
 
 		// loading ZoomLevel Configfile
@@ -167,7 +181,8 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 					"border": "solid 0px #666",
 					"position": "absolute",
 					"top": "0px",
-					"left": "0px"
+					"left": "0px",
+					"background-image": "url("+context.transparent+")"
 				});	
 				
 				
@@ -199,9 +214,11 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 				// set MouseWheelEvent
 				.bind('mousewheel', function(e, delta) {
 					
-					if(delta<0){
-						stdZoomPublic.onZoomOut(context, context.zoomLevelList[ context.zoomStep ] );
-						return;
+					if(!context.embedZoomOut){
+						if(delta<0){
+							stdZoomPublic.onZoomOut(context, context.zoomLevelList[ context.zoomStep ] );
+							return;
+						}
 					}
 					
 					context.zoomStep += (delta>0)? 1:-1;
@@ -218,18 +235,27 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 				});
 				
 				
-				$window
+				$document
 				.resize(function(){
 					stdZoomPublic.update(context);
 				})
 				.bind('mousemove', function(e){
-					context.mouseX = e.clientX;
-					context.mouseY = e.clientY;
+					if(!isIE) {
+						context.mouseX = e.pageX;
+						context.mouseY = e.pageY;
+					}
+					else {
+						context.mouseX = event.x + document.body.scrollLeft;
+						context.mouseY = event.y + document.body.scrollTop;
+					}
 				});
 					
 				context.viewrect.x = $wrap.width()*.5 - context.viewrect.width*.5;
 				context.viewrect.y = $wrap.height()*.5 - context.viewrect.height*.5;
 				
+				
+				// init
+				$document.trigger('mousemove');	
 				stdZoomPublic.update(context);			
 				
 				context.enterFrameID = setInterval( function(){
@@ -237,14 +263,11 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 				}, 1000/1);
 			}
 		});
-	
-		
 		return this;
 	};
 	
 	
-	stdZoomPublic.update = function(context){
-		var v = context;
+	stdZoomPublic.update = function(v){
 		
 		v.$dummy.css({top:v.viewrect.y,left:v.viewrect.x});
 		v.$thumbnail.css({top:v.viewrect.y,left:v.viewrect.x});
@@ -297,7 +320,7 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 	
 		if(loadTargets.length>0)
 		{
-			stdZoomPublic.loadimages(context, loadTargets, maxGrid, minGrid, v.dir);			
+			stdZoomPublic.loadimages(v, loadTargets, maxGrid, minGrid, v.dir);			
 		}
 		
 	}
@@ -353,7 +376,8 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 	
 	
 	
-	stdZoomPublic.zoom = function(v,  mx_, my_ ){		
+	stdZoomPublic.zoom = function(v,  mx_, my_ ){	
+		
 		// dispatch Zoom Event
 		v.$myBox.trigger(ON_ZOOM_CHANGED, [v.zoomStep]);
 				
@@ -470,11 +494,8 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 		context.$myBox.trigger(ON_ZOOM_OUTED, [ zoomLevel ]);
 	};
 						
-
-	// Initialize stdZoom: store common calculations, preload the interface graphics, append the html.
-	// This preps stdZoom for a speedy open when clicked, and lightens the burdon on the browser by only
-	// having to run once, instead of each time colorbox is opened.
 	stdZoomPublic.init = function () {
+		
 		// jQuery object generator to save a bit of space
 		function $div(id) {
 			return $('<div id="stdsm' + id + '"/>');
@@ -482,15 +503,10 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 		
 		// Create & Append jQuery Objects
 		$window = $(window);
+		$document = $(document);
 		return;	
 	};
 
-	// A method for fetching the current element ColorBox is referencing.
-	// returns a jQuery object.
-	//stdZoomPublic.element = function(){ return $(element); };
-
-	//stdZoomPublic.settings = defaults;
-	// Initializes ColorBox when the DOM has loaded
 	$(stdZoomPublic.init);
 
 }(jQuery));
