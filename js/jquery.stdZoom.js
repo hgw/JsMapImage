@@ -16,13 +16,12 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 */
 (function(E){E.fn.drag=function(L,K,J){if(K){this.bind("dragstart",L)}if(J){this.bind("dragend",J)}return !L?this.trigger("drag"):this.bind("drag",K?K:L)};var A=E.event,B=A.special,F=B.drag={not:":input",distance:0,which:1,dragging:false,setup:function(J){J=E.extend({distance:F.distance,which:F.which,not:F.not},J||{});J.distance=I(J.distance);A.add(this,"mousedown",H,J);if(this.attachEvent){this.attachEvent("ondragstart",D)}},teardown:function(){A.remove(this,"mousedown",H);if(this===F.dragging){F.dragging=F.proxy=false}G(this,true);if(this.detachEvent){this.detachEvent("ondragstart",D)}}};B.dragstart=B.dragend={setup:function(){},teardown:function(){}};function H(L){var K=this,J,M=L.data||{};if(M.elem){K=L.dragTarget=M.elem;L.dragProxy=F.proxy||K;L.cursorOffsetX=M.pageX-M.left;L.cursorOffsetY=M.pageY-M.top;L.offsetX=L.pageX-L.cursorOffsetX;L.offsetY=L.pageY-L.cursorOffsetY}else{if(F.dragging||(M.which>0&&L.which!=M.which)||E(L.target).is(M.not)){return }}switch(L.type){case"mousedown":E.extend(M,E(K).offset(),{elem:K,target:L.target,pageX:L.pageX,pageY:L.pageY});A.add(document,"mousemove mouseup",H,M);G(K,false);F.dragging=null;return false;case !F.dragging&&"mousemove":if(I(L.pageX-M.pageX)+I(L.pageY-M.pageY)<M.distance){break}L.target=M.target;J=C(L,"dragstart",K);if(J!==false){F.dragging=K;F.proxy=L.dragProxy=E(J||K)[0]}case"mousemove":if(F.dragging){J=C(L,"drag",K);if(B.drop){B.drop.allowed=(J!==false);B.drop.handler(L)}if(J!==false){break}L.type="mouseup"}case"mouseup":A.remove(document,"mousemove mouseup",H);if(F.dragging){if(B.drop){B.drop.handler(L)}C(L,"dragend",K)}G(K,true);F.dragging=F.proxy=M.elem=false;break}return true}function C(M,K,L){M.type=K;var J=E.event.handle.call(L,M);return J===false?false:J||M.result}function I(J){return Math.pow(J,2)}function D(){return(F.dragging===false)}function G(K,J){if(!K){return }K.unselectable=J?"off":"on";K.onselectstart=function(){return J};if(K.style){K.style.MozUserSelect=J?"":"none"}}})(jQuery);
 
+
+
 /*
  * stdZoomPlugin
- * 
- *
  */
 (function ($) {
-	// Shortcuts (to increase compression)
 	var stdZoom = 'stdZoom',
 	hover = 'hover',
 	TRUE = true,
@@ -31,20 +30,15 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 	isIE = '\v'=='v',
 	isIE6 = isIE && !window.XMLHttpRequest,
 
-	// Event Strings (to increase compression)
 	ON_ZOOM_CHANGED = 'onZoomChanged',
 	ON_ZOOM_OUTED = 'onZoomOuted',
 	
-	// Cached jQuery Object Variables
 	$window,
 	$document,
 	
-	// Variables for cached values or use across multiple functions
 	stdZoomContexts,
 	
 	defaults = {};
-
-					
 
 	// ****************
 	// HELPER FUNCTIONS
@@ -69,8 +63,10 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 	// Usage format: $.fn.stdZoom.hogehoge();
 	// Usage from within an iframe: parent.$.fn.stdZoom.hogehoge();
 	// ****************
+	/*
+	 * initialize
+	 */
 	stdZoomPublic = $.fn.stdZoom = function (options, custom_callback) {
-		
 		if (this.length) {
 			this.each(function () {
 				var data = $(this).data(stdZoom) ? $.extend({}, $(this).data(stdZoom), options) : $.extend({}, defaults, options);
@@ -183,16 +179,13 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 					"top": "0px",
 					"left": "0px",
 					"background-image": "url("+context.transparent+")"
-				});	
-				
-				
+				});		
 				$wrap.append($thumbnail);
 				$wrap.append($photoBox);
 				$wrap.append($dummy);
 				
 				context.$myBox.html( $wrap );
 			
-	
 				// set Dragging Event
 				$dummy.bind( 'drag' , function( event ){
 					context.viewrect.y = event.offsetY;
@@ -213,16 +206,13 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 				})
 				// set MouseWheelEvent
 				.bind('mousewheel', function(e, delta) {
-					
 					if(!context.embedZoomOut){
 						if(delta<0){
 							stdZoomPublic.onZoomOut(context, context.zoomLevelList[ context.zoomStep ] );
 							return;
 						}
 					}
-					
 					context.zoomStep += (delta>0)? 1:-1;
-					
 					if(context.zoomStep<0){ 
 						context.zoomStep = 0; 
 						return; 
@@ -230,10 +220,8 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 						context.zoomStep = context.maxZoomStep-1; 
 						return;
 					}
-					
 					stdZoomPublic.zoom(context, context.mouseX, context.mouseY);
 				});
-				
 				
 				$document
 				.resize(function(){
@@ -249,12 +237,10 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 						context.mouseY = event.y + document.body.scrollTop;
 					}
 				});
-					
 				context.viewrect.x = $wrap.width()*.5 - context.viewrect.width*.5;
 				context.viewrect.y = $wrap.height()*.5 - context.viewrect.height*.5;
-				
-				
-				// init
+							
+				// initialize events
 				$document.trigger('mousemove');	
 				stdZoomPublic.update(context);			
 				
@@ -267,23 +253,21 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 	};
 	
 	
+	/*
+	 * private update view
+	 */
 	stdZoomPublic.update = function(v){
-		
 		v.$dummy.css({top:v.viewrect.y,left:v.viewrect.x});
 		v.$thumbnail.css({top:v.viewrect.y,left:v.viewrect.x});
 		
 		// resize for grid images
 		v.$photoBox.css({top:v.viewrect.y,left:v.viewrect.x});	
 		
-	
 		var wrapperX = v.viewrect.x; 
 		var wrapperY = v.viewrect.y; 
 		var maxWidth = v.$myBox.width();
 		var maxHeight = v.$myBox.height();
-		
-		
 		var loadTargets = new Array();
-		
 		var maxGrid = {x:0, y:0};
 		var minGrid = {x:9999, y:9999}
 		
@@ -317,17 +301,17 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 			}
 		}
 		
-	
 		if(loadTargets.length>0)
 		{
 			stdZoomPublic.loadimages(v, loadTargets, maxGrid, minGrid, v.dir);			
 		}
-		
 	}
 	
 	
-	stdZoomPublic.loadimages = function(context, loadTargets, maxGrid, minGrid, dir){
-		
+	/*
+	 * private imageload
+	 */
+	stdZoomPublic.loadimages = function(context, loadTargets, maxGrid, minGrid, dir){	
 		// sort . distToCenter 
 		var gridWidth = maxGrid.x - minGrid.x;
 		var gridHeight = maxGrid.y - minGrid.y;		
@@ -375,9 +359,10 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 	}
 	
 	
-	
+	/*
+	 * private zoom event handler
+	 */
 	stdZoomPublic.zoom = function(v,  mx_, my_ ){	
-		
 		// dispatch Zoom Event
 		v.$myBox.trigger(ON_ZOOM_CHANGED, [v.zoomStep]);
 				
@@ -441,16 +426,15 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 			
 			v.oldZoomStep = v.zoomStep;
 			v.$dummy.width(v.viewrect.width).height(v.viewrect.height);
-			v.$thumbnail.width(v.viewrect.width).height(v.viewrect.height);
-					
+			v.$thumbnail.width(v.viewrect.width).height(v.viewrect.height);			
 			stdZoomPublic.update(v);
-		}
-		
+		}	
 	}
 	
-	
-	
-	// AS API
+	// API
+	/*
+	 * zoom in
+	 */
 	stdZoomPublic.zoomIn = function(v){
 		if( typeof(v) == "string" ){
 			v = fuindContext($(v));
@@ -469,13 +453,13 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 		stdZoomPublic.update(v);
 	}
 	
-	
-	
+	/*
+	 * zoom out
+	 */
 	stdZoomPublic.zoomOut = function(v){
 		if( typeof(v) == "string" ){
 			v = fuindContext($(v));
 		}
-
 
 		v.zoomStep -= 1;
 		if(v.zoomStep<0){ v.zoomStep = 0; return;  }
@@ -490,18 +474,19 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 		stdZoomPublic.update(v);
 	}
 	
+	/*
+	 * zoom out dispatch
+	 */
 	stdZoomPublic.onZoomOut = function(context, zoomLevel ){
 		context.$myBox.trigger(ON_ZOOM_OUTED, [ zoomLevel ]);
 	};
-						
+	
+					
 	stdZoomPublic.init = function () {
-		
-		// jQuery object generator to save a bit of space
 		function $div(id) {
 			return $('<div id="stdsm' + id + '"/>');
 		}
 		
-		// Create & Append jQuery Objects
 		$window = $(window);
 		$document = $(document);
 		return;	
