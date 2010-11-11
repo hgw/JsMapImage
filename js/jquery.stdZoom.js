@@ -475,9 +475,6 @@ Liscensed under the MIT License ~ http://threedubmedia.googlecode.com/files/MIT-
 	// This preps stdZoom for a speedy open when clicked, and lightens the burdon on the browser by only
 	// having to run once, instead of each time colorbox is opened.
 	stdZoomPublic.init = function () {
-		
-		//console.log('stdZoomPublic::init');
-		
 		// jQuery object generator to save a bit of space
 		function $div(id) {
 			return $('<div id="stdsm' + id + '"/>');
